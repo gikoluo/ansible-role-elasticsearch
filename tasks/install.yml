@@ -1,0 +1,35 @@
+---
+
+- name: Include optional user and group creation.
+  include: elasticsearch-optional-user.yml
+  become: yes
+  become_user: root
+
+- name: "Copy tar gz"
+  become: yes
+  copy:
+    src: "{{ es_download_path }}/{{ es_tarball }}.tar.gz"
+    dest: "/tmp/{{ es_tarball }}.tar.gz"
+
+- name: Extract the Elasticsearch tarball
+  become: yes
+  unarchive:
+    src: "/tmp/{{ es_tarball }}.tar.gz"
+    dest: "/tmp/"
+    copy: no
+    creates: "/tmp/{{ es_tarball }}"
+
+- name: Install Elasticsearch
+  become: yes
+  command: "cp -R /tmp/{{ es_tarball }} {{ es_install_dir }}"
+  args:
+    creates: "{{ es_install_dir }}"
+    removes: "/tmp/{{ es_tarball }}"
+
+
+# - name: Remove tmp files
+#   become: yes
+#   file:
+#     src: "/tmp/{{ es_tarball }}"
+#     state: absent
+

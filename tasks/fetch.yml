@@ -1,0 +1,18 @@
+#
+# fetch .tar.gz files
+#
+
+- stat:
+    path: "{{ es_download_path }}/{{ es_tarball }}.tar.gz"
+  register: st
+
+- debug: msg="Download {{ es_tarball_url }} to {{ es_download_path }}/{{ es_tarball }}.tar.gz"
+
+
+- name: get Elastic tarball (as tar.gz file)
+  get_url:
+    url:     "{{ es_tarball_url }}"
+    dest:    "{{ es_download_path }}/{{ es_tarball }}.tar.gz"
+    mode:    0644
+  when: es_download_from_remote and not st.stat.exists
+

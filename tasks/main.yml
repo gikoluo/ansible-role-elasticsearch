@@ -1,0 +1,67 @@
+---
+
+- debug: var=es_config
+
+#- include_vars: "vars/main.yml"
+
+- include: tasks/set-role-variables.yml
+
+- debug: var=es_config
+
+- debug: var=discovery.zen.ping.unicast.hosts
+
+#- fail: msg="If locking memory with bootstrap.memory_lock a heap size must be specified"
+  
+
+- name: check-set-parameters
+  include: elasticsearch-parameters.yml
+  tags:
+      - always
+
+- debug: var=es_config
+
+#- include: tasks/set-role-variables.yml
+
+- include: install.yml
+  tags:
+      - install
+
+- include: elasticsearch-config.yml
+  tags:
+      - config
+  become: true
+
+- include: elasticsearch-scripts.yml
+  when: es_scripts
+  tags:
+      - scripts
+
+- include: elasticsearch-plugins.yml
+  when: es_plugins is defined or es_plugins_reinstall
+  tags:
+      - plugins
+  become: true
+  become_user: "{{ es_user }}"
+
+- include: elasticsearch-ik.yml
+  when: ik is defined
+  tags:
+      - plugins
+  become: true
+  become_user: "{{ es_user }}"
+
+  #We always execute xpack as we may need to remove features
+- include: xpack/elasticsearch-xpack.yml
+  tags:
+      - xpack
+
+- include: elasticsearch-templates.yml
+  when: es_templates
+  tags:
+      - templates
+
+- meta: flush_handlers
+
+- name: Wait for elasticsearch to startup
+  wait_for: host={{es_api_host}} port={{es_api_port}} delay=5 connect_timeout=1
+  
