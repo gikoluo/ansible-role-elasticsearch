@@ -29,12 +29,13 @@
 - include: elasticsearch-config.yml
   tags:
       - config
-  become: true
+  become: yes
 
 - include: elasticsearch-scripts.yml
   when: es_scripts
   tags:
       - scripts
+  become: yes
 
 - include: elasticsearch-plugins.yml
   when: es_plugins is defined or es_plugins_reinstall
@@ -59,6 +60,7 @@
   when: es_templates
   tags:
       - templates
+  become: true
 
 - meta: flush_handlers
 

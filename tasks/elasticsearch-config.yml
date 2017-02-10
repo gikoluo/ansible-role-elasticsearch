@@ -2,23 +2,23 @@
 # Configure Elasticsearch Node
 
 #Create required directories
-- name: Create Directories
+- name: Create config Directories
   file: 
     path: "{{ item }}"
     state: directory
-    owner: "{{ es_user }}"
-    group: "{{ es_group }}"
+    owner: "root"
+    group: "root"
     recurse: yes
     mode: "0755"
   with_items:
-    - "{{pid_dir}}"
-    - "{{log_dir}}"
     - "{{conf_dir}}"
 
-- name: Create Data Directories
-  file: path={{ item }} state=directory recurse=yes owner={{ es_user }} group={{ es_group }} mode="0755"
+- name: Create working Directories
+  file: path={{ item }} state=directory recurse=yes owner={{ es_user }} group={{ es_group }} mode="0755" recurse=yes
   with_items:
     - "{{data_dirs}}"
+    - "{{pid_dir}}"
+    - "{{log_dir}}"
 
 
 #Copy the config template
@@ -31,6 +31,9 @@
 - name: Copy Default File for Instance
   template: src=elasticsearch.j2 dest={{instance_default_file}} mode=0644 force=yes
   notify: restart elasticsearch
+
+# - name: Replace discovery.zen.ping.unicast.hosts
+#   inline: discovery.zen.ping.unicast.hosts: ["host1", "host2"]
 
 #Copy the instance specific init file
 - name: Copy Debian Init File for Instance

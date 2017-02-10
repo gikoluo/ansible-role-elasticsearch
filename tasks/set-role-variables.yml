@@ -17,3 +17,42 @@
 - name: compose url for downloading file, if necessary
   set_fact:
     es_tarball_url:  "{{ es_download_base_url }}/{{ es_tarball }}.tar.gz"
+
+
+- name: set node_master name
+  set_fact: 
+    node_master: "{{ es_master }}"
+  when: es_master is defined
+
+- debug: var=hosts
+- debug: var=ansible_current_groups
+- debug: var=inventory_hostname
+- debug: var=ansible_hostname
+
+- block:
+  - name: set node_master name
+    set_fact: 
+      node_master: "{{ es_master }}"
+
+  - debug: var=node_master
+  - debug: var=groups[node_master]
+  
+  - name: set node_master ip
+    set_fact: 
+      es_master_ip: "{{ groups[node_master][0] }}"
+
+  - name: set node_master name
+    set_fact: 
+      node_master: ""
+
+  when: es_master is defined
+
+- block:
+  - name: set node_master ip
+    set_fact: 
+      es_master_ip: "{{ inventory_hostname }}"
+      es_master_port: "{{ es_config['http.port'] }}"
+  when: not node_master is defined and es_config['node.master']
+
+- set_fact:
+    discovery_zen_ping_unicast_hosts: "{{ es_master_ip }}:{{ es_master_port|default(9200) }}"
