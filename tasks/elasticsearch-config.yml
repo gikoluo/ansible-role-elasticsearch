@@ -32,8 +32,17 @@
   template: src=elasticsearch.j2 dest={{instance_default_file}} mode=0644 force=yes
   notify: restart elasticsearch
 
-# - name: Replace discovery.zen.ping.unicast.hosts
-#   inline: discovery.zen.ping.unicast.hosts: ["host1", "host2"]
+- debug: var=discovery_zen_ping_unicast_hosts
+- debug: var=instance_default_file
+- debug: var=conf_dir
+
+- name: Replace discovery.zen.ping.unicast.hosts
+  lineinfile:
+    dest: "{{conf_dir}}/elasticsearch.yml"
+    regexp: '^discovery\.zen\.ping\.unicast\.hosts:'
+    line: 'discovery.zen.ping.unicast.hosts: ["{{ discovery_zen_ping_unicast_hosts }}"]'
+    insertafter: '^discovery\.'
+  when: discovery_zen_ping_unicast_hosts is defined
 
 #Copy the instance specific init file
 - name: Copy Debian Init File for Instance
